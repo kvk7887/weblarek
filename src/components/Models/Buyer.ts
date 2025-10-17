@@ -71,16 +71,18 @@ export class Buyer {
   // валидация данных
   validate(): Record<string, string> {
     const errors: Record<string, string> = {};
-    if (!this.payment) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phonePattern = /^(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
+    if (this.payment !== "card" && this.payment !== "cash") {
       errors.payment = "Укажите способ оплаты";
     }
-    if (!this.email) {
+    if (!emailPattern.test(this.email)) {
       errors.email = "Укажите электронную почту";
     }
-    if (!this.phone) {
+    if (!phonePattern.test(this.phone)) {
       errors.phone = "Укажите телефон";
     }
-    if (!this.address) {
+    if (this.address.trim().length === 0) {
       errors.address = "Укажите адрес";
     }
     return errors;

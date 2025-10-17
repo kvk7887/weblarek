@@ -47,6 +47,13 @@ export class ContactsForm extends BaseForm<ContactsState> {
     this.setSubmitEnabled(errors.length === 0);
     return errors.length === 0;
   }
+
+  // Метод для отображения ошибок валидации из модели
+  public showValidationErrors(errors: Record<string, string>): void {
+    const errorMessages = Object.values(errors);
+    this.setErrors(errorMessages.join(". "));
+    this.setSubmitEnabled(errorMessages.length === 0);
+  }
 }
 
 

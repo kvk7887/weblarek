@@ -3,7 +3,7 @@ import { Products } from './components/Models/Products.ts';
 import { Cart } from './components/Models/Cart.ts';
 import { Buyer } from './components/Models/Buyer.ts';
 //import { apiProducts } from "./utils/data";
-import { IBuyer, IOrderRequest, TPayment } from "./types/index";
+import { IBuyer, IOrderRequest, TPayment, IProduct } from "./types/index";
 import { ShopApi } from "./components/Api/ShopApi.ts";
 import { Api } from './components/base/Api.ts';
 import { API_URL } from './utils/constants';
@@ -38,6 +38,8 @@ const shopApi = new ShopApi(api);
 const header = new Header(ensureElement<HTMLElement>('.header'), events);
 const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'));
+
+let contactsForm: ContactsForm | null = null;
 
 // Templates
 const tplCatalog = ensureElement<HTMLTemplateElement>('#card-catalog');
@@ -116,8 +118,8 @@ function openOrderStep1() {
 
 function openOrderStep2() {
   const el = cloneTemplate<HTMLElement>(tplContacts);
-  const form = new ContactsForm(el as HTMLFormElement, events);
-  modal.setContent(form.render());
+  contactsForm = new ContactsForm(el as HTMLFormElement, events);
+  modal.setContent(contactsForm.render());
 }
 
 function openSuccess(total: number) {
@@ -184,6 +186,16 @@ events.on<{ email: string; phone: string }>('contacts:change', ({ email, phone }
 });
 
 events.on('contacts:submit', async () => {
+  const validationErrors = buyerModel.validate();
+  if (Object.keys(validationErrors).length > 0) {
+    console.error('Ошибки валидации:', validationErrors);
+    // Отображаем ошибки в форме
+    if (contactsForm) {
+      contactsForm.showValidationErrors(validationErrors);
+    }
+    return;
+  }
+
   const order: IOrderRequest = {
     payment: buyerModel.getData().payment,
     email: buyerModel.getData().email,
@@ -329,9 +341,9 @@ shopApi
   .then((products) => {
     console.log("Получение данных по api:");
     productsModel.setItems(products);
-    log("Массив товаров из каталога по api:");
-    log("Products::getItems");
-    logTable(productsModel.getItems());
+    //log("Массив товаров из каталога по api:");
+    //log("Products::getItems");
+    //logTable(productsModel.getItems());
   })
   .catch((error) => {
     console.error('Ошибка загрузки товаров: ', error);

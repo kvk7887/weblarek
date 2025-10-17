@@ -127,6 +127,7 @@ function openSuccess(total: number) {
   const success = new OrderSuccess(el, events);
   success.render({ total });
   modal.setContent(success.render());
+  modal.open();
 }
 
 // Event wiring
@@ -171,7 +172,11 @@ events.on<{ id: string }>('basket:item:remove', ({ id }) => {
 
 events.on('cart:changed', () => {
   header.render({ count: cartModel.getTotalCount() });
-  if (document.querySelector('#modal-container.modal_active')) openBasket();
+  // Не перезаписываем модальное окно, если оно содержит OrderSuccess
+  if (document.querySelector('#modal-container.modal_active') && 
+      !document.querySelector('.order-success')) {
+    openBasket();
+  }
 });
 
 events.on<{ payment: TPayment | null; }>('order:change', ({ payment }) => {
@@ -209,9 +214,9 @@ events.on('contacts:submit', async () => {
   };
   try {
     const res = await shopApi.createOrder(order);
-    openSuccess(res.total ?? order.total);
     cartModel.clear();
     buyerModel.clear();
+    openSuccess(res.total ?? order.total);
   } catch (e) {
     console.error('Ошибка создания заказа', e);
   }

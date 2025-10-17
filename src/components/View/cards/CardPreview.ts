@@ -10,13 +10,15 @@ interface PreviewState extends CardState {
 export class CardPreview extends BaseCard<PreviewState> {
   private readonly button: HTMLButtonElement;
   private readonly textEl: HTMLElement;
+  private currentState: PreviewState | null = null;
 
   constructor(container: HTMLElement, private readonly events: IEvents) {
     super(container);
     this.button = ensureElement<HTMLButtonElement>(".card__button", container);
     this.textEl = ensureElement<HTMLElement>(".card__text", container);
     this.button.addEventListener("click", () => {
-      const { id, inCart, price } = this as unknown as PreviewState;
+      if (!this.currentState) return;
+      const { id, inCart, price } = this.currentState;
       if (price === null) return; // disabled state is handled via Presenter
       this.events.emit(inCart ? "preview:remove" : "preview:buy", { id });
     });
@@ -28,6 +30,13 @@ export class CardPreview extends BaseCard<PreviewState> {
 
   set inCart(value: boolean) {
     this.button.textContent = value ? "Удалить из корзины" : "В корзину";
+  }
+
+  render(data?: Partial<PreviewState>): HTMLElement {
+    if (data) {
+      this.currentState = { ...this.currentState, ...data } as PreviewState;
+    }
+    return super.render(data);
   }
 }
 

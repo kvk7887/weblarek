@@ -149,7 +149,10 @@ events.on<{ item: IProduct | null }>('product:view:changed', ({ item }) => {
 
 events.on<{ id: string }>('preview:buy', ({ id }) => {
   const product = productsModel.getItemById(id);
-  if (product) cartModel.addItem(product);
+  if ( !product ) return;
+  if ( product.price === null ) return;
+  if ( cartModel.hasItem(product.id) ) return;
+  cartModel.addItem(product);
   modal.close();
 });
 

@@ -40,7 +40,6 @@ export class OrderForm extends BaseForm<OrderFormState> {
       payment,
       address: this.addressInput.value,
     });
-    this.validate();
   }
 
   private togglePaymentButtons(payment: TPayment) {
@@ -59,26 +58,17 @@ export class OrderForm extends BaseForm<OrderFormState> {
         : null,
       address: this.addressInput.value,
     });
-    this.validate();
   }
 
   protected onSubmit(): void {
-    if (this.validate()) this.events.emit("order:next");
+    this.events.emit("order:next");
   }
 
-  private validate(): boolean {
-    const payment = this.payCardBtn.classList.contains("button_alt-active")
-      ? "card"
-      : this.payCashBtn.classList.contains("button_alt-active")
-      ? "cash"
-      : null;
-    const address = this.addressInput.value.trim();
-    const errors: string[] = [];
-    if (!payment) errors.push("Укажите способ оплаты");
-    if (!address) errors.push("Укажите адрес");
-    this.setErrors(errors.join(". "));
-    this.setSubmitEnabled(errors.length === 0);
-    return errors.length === 0;
+  // Метод для отображения ошибок валидации из модели
+  public showValidationErrors(errors: Record<string, string>): void {
+    const errorMessages = Object.values(errors);
+    this.setErrors(errorMessages.join(". "));
+    this.setSubmitEnabled(errorMessages.length === 0);
   }
 }
 

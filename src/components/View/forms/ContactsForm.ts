@@ -30,22 +30,10 @@ export class ContactsForm extends BaseForm<ContactsState> {
       email: this.emailInput.value,
       phone: this.phoneInput.value,
     });
-    this.validate();
   }
 
   protected onSubmit(): void {
-    if (this.validate()) this.events.emit("contacts:submit");
-  }
-
-  private validate(): boolean {
-    const email = this.emailInput.value.trim();
-    const phone = this.phoneInput.value.trim();
-    const errors: string[] = [];
-    if (!email) errors.push("Укажите электронную почту");
-    if (!phone) errors.push("Укажите телефон");
-    this.setErrors(errors.join(". "));
-    this.setSubmitEnabled(errors.length === 0);
-    return errors.length === 0;
+    this.events.emit("contacts:submit");
   }
 
   // Метод для отображения ошибок валидации из модели

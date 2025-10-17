@@ -1,16 +1,19 @@
 import { IBuyer, TPayment } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class Buyer {
   private payment: TPayment | null;
   private email: string;
   private phone: string;
   private address: string;
+  private events?: IEvents;
 
-  constructor() {
+  constructor(events?: IEvents) {
     this.payment = null;
     this.email = "";
     this.phone = "";
     this.address = "";
+    this.events = events;
   }
 
   // сохранение данных в модели
@@ -19,26 +22,31 @@ export class Buyer {
     if (data.phone !== undefined) this.phone = data.phone;
     if (data.email !== undefined) this.email = data.email;
     if (data.address !== undefined) this.address = data.address;
+    this.emitChanged();
   }
 
   // сохранение способа оплаты
   setPayment(payment: TPayment): void {
       this.payment = payment;
+      this.emitChanged();
   }
 
   // сохранение email
   setEmail(email: string): void {
       this.email = email;
+      this.emitChanged();
   }
 
   // сохранение телефона
   setPhone(phone: string): void {
       this.phone = phone;
+      this.emitChanged();
   }
 
   // сохранение адреса
   setAddress(address: string): void {
       this.address = address;
+      this.emitChanged();
   }
 
   // получение всех данных покупателя
@@ -57,23 +65,30 @@ export class Buyer {
     this.email = "";
     this.phone = "";
     this.address = "";
+    this.emitChanged();
   }
   
   // валидация данных
   validate(): Record<string, string> {
     const errors: Record<string, string> = {};
-    if (!this.payment) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phonePattern = /^(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
+    if (this.payment !== "card" && this.payment !== "cash") {
       errors.payment = "Укажите способ оплаты";
     }
-    if (!this.email) {
+    if (!emailPattern.test(this.email)) {
       errors.email = "Укажите электронную почту";
     }
-    if (!this.phone) {
+    if (!phonePattern.test(this.phone)) {
       errors.phone = "Укажите телефон";
     }
-    if (!this.address) {
+    if (this.address.trim().length === 0) {
       errors.address = "Укажите адрес";
     }
     return errors;
+  }
+
+  private emitChanged() {
+    this.events?.emit("buyer:changed", { buyer: this.getData() });
   }
 }

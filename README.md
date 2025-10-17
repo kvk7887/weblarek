@@ -179,3 +179,89 @@ address: string - адрес доставки
 Методы класса:
 * getProducts(): Promise<IProduct[]> - Получение списка товаров.
 * createOrder(order: IOrderRequest): Promise<IOrderResponse> - Создание заказа.
+
+## Слой Представления (View)
+Базовые классы:
+Component<T> - абстрактный базовый класс для всех компонентов
+BaseForm<T> - базовый класс для всех форм с валидацией
+BaseCard<T> - базовый класс для всех карточек товаров
+
+### Основные компоненты
+
+Layout компоненты
+1. Header - шапка приложения: Отображает логотип и кнопку корзины, показывает счетчик товаров в корзине, генерирует событие header:basket:open при клике на корзину.
+2. Gallery - контейнер для каталога товаров: Отображает массив карточек товаров, простой контейнер без дополнительной логики
+3. Modal - модальное окно: Универсальный компонент для отображения любого контента, поддерживает закрытие по клику вне области или по кнопке
+Методы: open(), close(), setContent()
+
+Карточки товаров
+1. BaseCard<T> - базовый класс для карточек
+Общие свойства: id, title, image, category, price
+Применение CSS-модификаторов для категорий товаров
+2. CardCatalog - карточка в каталоге: Отображает товар в списке каталога, генерирует событие catalog:card:selected при клике
+3. CardPreview - детальный просмотр товара: показывает полную информацию о товаре, кнопка "В корзину" / "Удалить из корзины", генерирует события preview:buy или preview:remove
+4. CardBasket - товар в корзине: отображает товар в списке корзины с номером, кнопка удаления товара, генерирует событие basket:item:remove
+
+Формы
+1. BaseForm<T> - базовый класс для форм: обработка событий input и submit, валидация и отображение ошибок, управление состоянием кнопки отправки
+2. OrderForm - форма заказа (шаг 1): выбор способа оплаты (карта/наличные), поле ввода адреса доставки,валидация обязательных полей, генерирует события order:change и order:next
+2. ContactsForm - форма контактов (шаг 2): поля email и телефон, валидация и отображение ошибок, генерирует события contacts:change и contacts:submit
+
+Специализированные представления
+1. BasketView - представление корзины: список товаров в корзине, общая стоимость заказа, кнопка "Оформить", обработка пустой корзины,
+Генерирует событие basket:checkout
+2. OrderSuccess - страница успешного заказа: отображение суммы списанных синапсов, кнопка "За новыми покупками!", генерирует событие success:close
+
+События View слоя
+1. Событие	2. Источник	3. Назначение
+1. header:basket:open	2. Header	3. Открытие корзины
+1. catalog:card:selected	2. CardCatalog	3. Выбор товара
+1. preview:buy	2. CardPreview	3. Добавление в корзину
+1. preview:remove	2. CardPreview	3. Удаление из корзины
+1. basket:item:remove	2. CardBasket	3. Удаление товара из корзины
+1. basket:checkout	2. BasketView	3. Оформление заказа
+1. order:change	2. OrderForm	3. Изменение данных заказа
+1. order:next	2. OrderForm	3. Переход к следующему шагу
+1. contacts:change	2. ContactsForm	3. Изменение контактов
+1. contacts:submit	2. ContactsForm	3. Отправка заказа
+1. success:close	2. OrderSuccess	3. Закрытие окна успеха
+
+## Слой Презентер ( Логика приложения)
+Презентер координирует взаимодействие между Model и View через Event-Driven Architecture. Реализован в main.ts как центральная система управления состоянием приложения.
+
+Архитектура:
+1.Инициализация системы
+const events = new EventEmitter();
+const productsModel = new Products(events);
+const cartModel = new Cart(events);
+const buyerModel = new Buyer(events);
+const shopApi = new ShopApi(new Api(API_URL));
+
+2. Основные представления
+const header = new Header(ensureElement('.header'), events);
+const gallery = new Gallery(ensureElement('.gallery'));
+const modal = new Modal(ensureElement('#modal-container'));
+
+Ключевые функции:
+1. Управление каталогом:
+renderCatalog() - отображение товаров
+openPreview() - детальный просмотр товара
+createCatalogCard() - создание карточки товара
+3. Управление корзиной:
+openBasket() - отображение корзины
+Обработка добавления/удаления товаров
+Синхронизация счетчика в шапке
+3. Процесс заказа:
+openOrderStep1() - форма оплаты и адреса
+openOrderStep2() - форма контактов
+openSuccess() - результат заказа
+
+Основные события:
+products:changed - Обновление каталога
+catalog:card:selected - Выбор товара
+preview:buy/remove - Добавление/удаление из корзины
+cart:changed - Обновление UI корзины
+order:change - Сохранение данных заказа
+contacts:submit - Отправка заказа на сервер
+
+

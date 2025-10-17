@@ -9,6 +9,7 @@ interface BasketState extends CardState {
 export class CardBasket extends BaseCard<BasketState> {
   private readonly deleteButton: HTMLButtonElement;
   private readonly indexEl: HTMLElement;
+  private currentId: string | null = null;
 
   constructor(container: HTMLElement, private readonly events: IEvents) {
     super(container);
@@ -18,13 +19,21 @@ export class CardBasket extends BaseCard<BasketState> {
       container
     );
     this.deleteButton.addEventListener("click", () => {
-      const { id } = this as unknown as BasketState;
-      this.events.emit("basket:item:remove", { id });
+      if (this.currentId) {
+        this.events.emit("basket:item:remove", { id: this.currentId });
+      }
     });
   }
 
   set index(value: number) {
     this.indexEl.textContent = String(value);
+  }
+
+  render(data?: Partial<BasketState>): HTMLElement {
+    if (data && data.id) {
+      this.currentId = data.id;
+    }
+    return super.render(data);
   }
 }
 

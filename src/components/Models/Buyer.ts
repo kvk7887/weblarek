@@ -71,19 +71,41 @@ export class Buyer {
   // валидация данных
   validate(): Record<string, string> {
     const errors: Record<string, string> = {};
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phonePattern = /^(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
-    if (this.payment !== "card" && this.payment !== "cash") {
+    if (!this.payment) {
       errors.payment = "Укажите способ оплаты";
     }
-    if (!emailPattern.test(this.email)) {
+    if (!this.email) {
       errors.email = "Укажите электронную почту";
     }
-    if (!phonePattern.test(this.phone)) {
+    if (!this.phone) {
       errors.phone = "Укажите телефон";
     }
-    if (this.address.trim().length === 0) {
+    if (!this.address) {
       errors.address = "Укажите адрес";
+    }
+    return errors;
+  }
+
+  // валидация только для первого шага заказа (способ оплаты и адрес)
+  validateOrderStep(): Record<string, string> {
+    const errors: Record<string, string> = {};
+    if (!this.payment) {
+      errors.payment = "Укажите способ оплаты";
+    }
+    if (!this.address) {
+      errors.address = "Укажите адрес";
+    }
+    return errors;
+  }
+
+  // валидация только для второго шага заказа (email и телефон)
+  validateContactsStep(): Record<string, string> {
+    const errors: Record<string, string> = {};
+    if (!this.email) {
+      errors.email = "Укажите электронную почту";
+    }
+    if (!this.phone) {
+      errors.phone = "Укажите телефон";
     }
     return errors;
   }
